@@ -1,0 +1,37 @@
+from functools import wraps
+
+def time(func):
+    import time
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t1 = time.time()
+        exec = func(*args, **kwargs)
+        t2 = time.time()
+        print(f'{func.__name__} {t2 - t1} seconds')
+    return wrapper()
+
+def start_game():
+    generate_word()
+    guess_letter()
+
+@time
+def generate_word():
+    import random
+    import requests
+    url = 'http://www-01.sil.org/linguistics/wordlists/english/wordlist/wordsEn.txt'
+    r = requests.get(url)
+    wordlist = []
+
+    with open("words.txt", "r") as wordfile:
+        [wordlist.append(word.strip('\n')) for word in wordfile]
+
+    word = random.choice(wordlist)
+    empty_word = ''
+    for _ in range(len(word)):
+        empty_word += '_ '
+    print(empty_word)
+
+generate_word
+
+def guess_letter():
+    pass
