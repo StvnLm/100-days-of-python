@@ -1,0 +1,20 @@
+from functools import wraps
+
+def bold(original_function):
+    @wraps(original_function)
+    def wrapper(*args, **kwargs):
+        return '<b>' + original_function(*args, **kwargs)  + '</b>'
+    return wrapper
+
+def paragraph(original_function):
+    @wraps(original_function)
+    def wrapper(*args, **kwargs):
+        return '<p>' + original_function(*args, **kwargs) + '</p>'
+    return wrapper
+
+@paragraph
+@bold
+def get_text(text):
+    return text
+
+print(get_text('test'))
