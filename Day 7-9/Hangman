@@ -1,37 +1,66 @@
 from functools import wraps
+import re
 
 def time(func):
     import time
     @wraps(func)
     def wrapper(*args, **kwargs):
         t1 = time.time()
-        exec = func(*args, **kwargs)
+        func(*args, **kwargs)
         t2 = time.time()
         print(f'{func.__name__} {t2 - t1} seconds')
-    return wrapper()
+    return wrapper
 
-def start_game():
-    generate_word()
-    guess_letter()
+class Hangman():
 
-@time
-def generate_word():
-    import random
-    import requests
-    url = 'http://www-01.sil.org/linguistics/wordlists/english/wordlist/wordsEn.txt'
-    r = requests.get(url)
-    wordlist = []
+    def __init__(self):
+        self.realword = ''
+        self.emptyword = ''
 
-    with open("words.txt", "r") as wordfile:
-        [wordlist.append(word.strip('\n')) for word in wordfile]
+    def create_board(self):
+        for _ in range(len(self.realword)):
+            self.emptyword += '_ '
+        print(self.emptyword)
 
-    word = random.choice(wordlist)
-    empty_word = ''
-    for _ in range(len(word)):
-        empty_word += '_ '
-    print(empty_word)
+    # @time
+    def generate_word(self):
+        import random
+        import requests
+        url = 'http://www-01.sil.org/linguistics/wordlists/english/wordlist/wordsEn.txt'
+        response = requests.get(url)
+        match = re.findall('\w+', response.text)
+        wordlist = []
+        [wordlist.append(word) for word in match]
+        self.realword = random.choice(wordlist)
 
-generate_word
+    def guess_letter(self):
+        chances = 10
+        guesses = []
+        while True:
+            guess = input('Guess a letter: ')
+            guesses.append(guess)
+            for index in range(len(self.realword)):
+                if guess == self.realword[index]:
+                    self.emptyword = self.emptyword[:index*2] + guess + ' ' + self.emptyword[index*2+2:]
+                if guess not in self.realword:
+                    chances -= 1
+                    print('Wrong guess! ', 'Guesses: ', guesses)
+                    print(chances, 'chances remaining')
+                    break
+            print(self.emptyword + '\n' +'\n')
+            if chances == 0:
+                print('Game over! The word was', self.realword.strip() + '!')
+                return False
+            if self.emptyword.replace(" ", "") == self.realword:
+                print('Winner!')
+                return False
 
-def guess_letter():
-    pass
+    def main(self):
+        game = Hangman()
+        game.generate_word()
+        game.create_board()
+        game.guess_letter()
+
+if __name__ == '__main__':
+    Hangman().main()
+    # test.main()
